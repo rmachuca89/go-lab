@@ -1,20 +1,77 @@
-package todo
+package todo_test
 
-import "testing"
+import (
+	"testing"
+	"time"
 
-func TestList(t *testing.T) {
-	t.Error("Not yet implemented.")
-}
+	"github.com/rmachuca89/go-lab/pkg/todo"
+)
+
 func TestAdd(t *testing.T) {
-	t.Error("Not yet implemented.")
+	taskTitle := "Task 1"
+	tL := new(todo.Tasks)
+
+	t1, err := tL.Add(taskTitle)
+
+	if err != nil {
+		t.Fatalf("Unexpected error when calling Add() with %q: %q", taskTitle, err)
+	}
+
+	if t1.Title != taskTitle {
+		t.Errorf("Expected %q, got %q instead.", taskTitle, t1.Title)
+	}
+}
+
+func TestGet(t *testing.T) {
+	t1 := todo.Task{
+		Title:     "Task 1",
+		CreatedAt: time.Date(2022, time.January, 17, 9, 50, 0, 0, time.UTC),
+	}
+	tL := todo.Tasks{t1}
+	taskTitle := "Task 1"
+
+	got := tL.Get(taskTitle)
+
+	if got != &t1 {
+		t.Errorf("Expected %q, got %q instead.", t1.Title, got.Title)
+	}
 }
 
 func TestComplete(t *testing.T) {
-	t.Error("Not yet implemented.")
+	t1 := todo.Task{
+		Title:     "Task 1",
+		CreatedAt: time.Date(2022, time.January, 17, 9, 50, 0, 0, time.UTC),
+	}
+	tL := todo.Tasks{t1}
+	taskTitle := "Task 1"
+
+	err := tL.Complete(taskTitle)
+	if err != nil {
+		t.Fatalf("Unexpected error when calling Complete() with %q: %q", taskTitle, err)
+	}
+
+	tC := tL.Get(taskTitle)
+
+	if !tC.Completed {
+		t.Errorf("Expected %q, got %q instead.", taskTitle, t1.Title)
+	}
 }
 
 func TestDelete(t *testing.T) {
-	t.Error("Not yet implemented.")
+	tL := new(todo.Tasks)
+	tasks := []string{"Task 1", "Task 2", "Task 3"}
+	for _, t := range tasks {
+		tL.Add(t)
+	}
+
+	taskTitle := "Task 2"
+	if err := tL.Delete(taskTitle); err != nil {
+		t.Fatalf("Unexpected error when calling Delete() with %q: %q", taskTitle, err)
+	}
+
+	if len(tL) != 2 {
+
+	}
 }
 
 func TestSave(t *testing.T) {
