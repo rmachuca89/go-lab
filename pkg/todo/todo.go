@@ -15,7 +15,11 @@ type Task struct {
 type Tasks []Task
 
 func (t *Tasks) Add(title string) (*Task, error) {
-	return new(Task), errors.New("not yet implemented")
+	var newT Task
+	newT.Title = title
+	newT.CreatedAt = time.Now()
+	*t = append(*t, newT)
+	return &newT, nil
 }
 
 func (t *Tasks) Complete(title string) error {
