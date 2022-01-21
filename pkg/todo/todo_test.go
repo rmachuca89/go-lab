@@ -68,10 +68,6 @@ func TestDelete(t *testing.T) {
 	if err := tL.Delete(taskTitle); err != nil {
 		t.Fatalf("Unexpected error when calling Delete() with %q: %q", taskTitle, err)
 	}
-
-	if len(tL) != 2 {
-
-	}
 }
 
 func TestSave(t *testing.T) {
