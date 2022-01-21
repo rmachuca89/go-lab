@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/rmachuca89/go-lab/pkg/todo"
 )
 
@@ -23,18 +24,19 @@ func TestAdd(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	t1 := todo.Task{
+	want := &todo.Task{
 		Title:     "Task 1",
 		CreatedAt: time.Date(2022, time.January, 17, 9, 50, 0, 0, time.UTC),
 	}
-	tL := todo.Tasks{t1}
+	tL := todo.Tasks{*want}
 	taskTitle := "Task 1"
 
 	got := tL.Get(taskTitle)
 
-	if got != &t1 {
-		t.Errorf("Expected %q, got %q instead.", t1.Title, got.Title)
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Tasks.Get(%q) got unexpected diff (-want +got):\n%s", taskTitle, diff)
 	}
+
 }
 
 func TestComplete(t *testing.T) {
