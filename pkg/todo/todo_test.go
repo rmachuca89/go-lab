@@ -68,14 +68,23 @@ func TestDelete(t *testing.T) {
 
 	taskTitle := "Task 2"
 	if err := tL.Delete(taskTitle); err != nil {
-		t.Fatalf("Unexpected error when calling Delete() with %q: %q", taskTitle, err)
+		t.Fatalf("Unexpected error when calling Delete(%q): %q", taskTitle, err)
+	}
+
+	wantLen := 2
+	if len(*tL) != wantLen {
+		t.Errorf("Delete(%q) did not remove any task", taskTitle)
+	}
+
+	if dT := tL.Get(taskTitle); *dT != (todo.Task{}) {
+		t.Errorf("Get(%q) stil found original task; returned: %v", taskTitle, dT)
 	}
 }
 
 func TestSave(t *testing.T) {
-	t.Error("Not yet implemented.")
+	t.Skip("Not yet implemented.")
 }
 
 func TestLoad(t *testing.T) {
-	t.Error("Not yet implemented.")
+	t.Skip("Not yet implemented.")
 }
