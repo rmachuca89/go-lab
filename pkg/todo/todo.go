@@ -30,13 +30,24 @@ func (t *Tasks) Complete(title string) error {
 }
 
 func (t *Tasks) Delete(title string) error {
-	return errors.New("not yet implemented")
+
+	tL := *t
+	index := indexOfTitle(tL, title)
+	if index == -1 {
+		return errors.New("task index not found")
+	}
+	dT := t.popTaskAtIndex(index)
+	if dT == new(Task) {
+		return errors.New("task could not be deleted")
+	}
+	return nil
 }
 
 func (t *Tasks) Save(title string) error {
 	return errors.New("not yet implemented")
 }
 
+// Get searches tasks by title and returns the task if found, or a new zeroed task if not.
 func (t *Tasks) Get(title string) *Task {
 	// Dereference the current pointer, as indexing is only supported on values.
 	tL := *t
@@ -60,4 +71,17 @@ func indexOfTitle(tL Tasks, title string) int {
 		}
 	}
 	return -1
+}
+
+func (t *Tasks) popTaskAtIndex(i int) *Task {
+	task := new(Task)
+	tl := *t
+
+	if len(tl) > i && i >= 0 {
+		task = &tl[i]
+	}
+
+	*t = append((*t)[:i], (*t)[i+1:]...)
+
+	return task
 }
