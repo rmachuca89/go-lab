@@ -23,7 +23,10 @@ func (t *Tasks) Add(title string) (*Task, error) {
 }
 
 func (t *Tasks) Complete(title string) error {
-	return errors.New("not yet implemented")
+	cT := t.Get(title)
+	cT.Completed = true
+	cT.CompletedAt = time.Now()
+	return nil
 }
 
 func (t *Tasks) Delete(title string) error {
