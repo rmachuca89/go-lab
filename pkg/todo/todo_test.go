@@ -52,9 +52,9 @@ func TestComplete(t *testing.T) {
 		t.Fatalf("Unexpected error when calling Complete() with %q: %q", taskTitle, err)
 	}
 
-	tC := tL.Get(taskTitle)
+	cT := tL.Get(taskTitle)
 
-	if !tC.Completed {
+	if !cT.Completed {
 		t.Errorf("Expected %q, got %q instead.", taskTitle, t1.Title)
 	}
 }
