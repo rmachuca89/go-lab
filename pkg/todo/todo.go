@@ -73,7 +73,15 @@ func (t *Tasks) Save(filename string) error {
 
 // Load parses the Tasks list from the provided filename disk file.
 func (t *Tasks) Load(filename string) error {
-	return errors.New("not yet implemented")
+	contents, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(contents, t)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // IndexOfTitle returns an index `int` value by searching current Tasks by Task.title.
