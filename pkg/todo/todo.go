@@ -1,7 +1,10 @@
 package todo
 
 import (
+	"encoding/json"
 	"errors"
+	"io/fs"
+	"os"
 	"time"
 )
 
@@ -43,10 +46,6 @@ func (t *Tasks) Delete(title string) error {
 	return nil
 }
 
-func (t *Tasks) Save(title string) error {
-	return errors.New("not yet implemented")
-}
-
 // Get searches tasks by title and returns the task if found, or a new zeroed task if not.
 func (t *Tasks) Get(title string) *Task {
 	// Dereference the current pointer, as indexing is only supported on values.
@@ -60,6 +59,21 @@ func (t *Tasks) Get(title string) *Task {
 	}
 
 	return g
+}
+
+// Save flushes the Tasks list into disk to the provided filename.
+func (t *Tasks) Save(filename string) error {
+	contents, err := json.Marshal(t)
+	if err != nil {
+		return err
+	}
+	perms := 0644 // owner: read, write. group read. others read.
+	return os.WriteFile(filename, contents, fs.FileMode(perms))
+}
+
+// Load parses the Tasks list from the provided filename disk file.
+func (t *Tasks) Load(filename string) error {
+	return errors.New("not yet implemented")
 }
 
 // IndexOfTitle returns an index `int` value by searching current Tasks by Task.title.

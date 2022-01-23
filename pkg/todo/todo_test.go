@@ -1,6 +1,7 @@
 package todo_test
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -81,10 +82,34 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestSave(t *testing.T) {
-	t.Skip("Not yet implemented.")
-}
+func TestSaveLoad(t *testing.T) {
+	// setup
+	tL1 := new(todo.Tasks)
+	tL2 := new(todo.Tasks)
+	tasks := []string{"Task 1", "Task 2", "Task 3"}
+	for _, t := range tasks {
+		tL1.Add(t)
+	}
 
-func TestLoad(t *testing.T) {
-	t.Skip("Not yet implemented.")
+	tempFile, err := os.CreateTemp("", "")
+	if err != nil {
+		t.Fatalf("Unexpected error when creating temp file: %q", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	// act
+	if err := tL1.Save(tempFile.Name()); err != nil {
+		t.Fatalf("Unexpected error when calling Save(%q): %q", tempFile.Name(), err)
+	}
+
+	err = tL2.Load(tempFile.Name())
+	if err != nil {
+		t.Fatalf("Unexpected error when loading temp file: %q", err)
+	}
+
+	// validate
+	taskTitle := "Task 2"
+	if diff := cmp.Diff(tL2.Get(taskTitle), tL1.Get(taskTitle)); diff != "" {
+		t.Errorf("Tasks.Get(%q) different before and after saving and loading (-want +got):\n%s", taskTitle, diff)
+	}
 }
