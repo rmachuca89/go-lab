@@ -17,6 +17,7 @@ type Task struct {
 
 type Tasks []Task
 
+// Add appends a new Task to the list with the provided title, and returns it.
 func (t *Tasks) Add(title string) (*Task, error) {
 	var newT Task
 	newT.Title = title
@@ -25,19 +26,24 @@ func (t *Tasks) Add(title string) (*Task, error) {
 	return &newT, nil
 }
 
+// Complete marks the provided task title as done if found.
 func (t *Tasks) Complete(title string) error {
 	cT := t.Get(title)
+	if *cT == (Task{}) {
+		return errors.New("task not found")
+	}
 	cT.Completed = true
 	cT.CompletedAt = time.Now()
 	return nil
 }
 
+// Delete removes the provided task from the list if found.
 func (t *Tasks) Delete(title string) error {
 
 	tL := *t
 	index := indexOfTitle(tL, title)
 	if index == -1 {
-		return errors.New("task index not found")
+		return errors.New("task not found")
 	}
 	dT := t.popTaskAtIndex(index)
 	if dT == new(Task) {
@@ -46,7 +52,8 @@ func (t *Tasks) Delete(title string) error {
 	return nil
 }
 
-// Get searches tasks by title and returns the task if found, or a new zeroed task if not.
+// Get searches tasks by title and returns the corresponding task if found,
+// or a new empty task if not.
 func (t *Tasks) Get(title string) *Task {
 	// Dereference the current pointer, as indexing is only supported on values.
 	tL := *t
@@ -84,7 +91,7 @@ func (t *Tasks) Load(filename string) error {
 	return nil
 }
 
-// IndexOfTitle returns an index `int` value by searching current Tasks by Task.title.
+// indexOfTitle returns an index `int` value by searching current Tasks by Task.title.
 // Returns `-1` when the provided title was not found in the data set.
 func indexOfTitle(tL Tasks, title string) int {
 	for i, task := range tL {
@@ -95,6 +102,8 @@ func indexOfTitle(tL Tasks, title string) int {
 	return -1
 }
 
+// popTaskAtIndex returns task at provided index from the slice and returns it,
+// if found, or a new empty one if not.
 func (t *Tasks) popTaskAtIndex(i int) *Task {
 	task := new(Task)
 	tl := *t
