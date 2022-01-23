@@ -75,8 +75,6 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println("Welcome to the TODO CLI APP!")
-
 	if cfg.debug {
 		log.Default().Printf("[DEBUG] App Config: %+v", cfg)
 	}
@@ -97,7 +95,7 @@ func main() {
 		log.Fatalf("Could not load tasks file: %q", err)
 	}
 
-	if len(os.Args) <= 1 {
+	if len(flag.Args()) <= 0 {
 		// 2. List tasks.
 		tasksList(*tL)
 	} else {
