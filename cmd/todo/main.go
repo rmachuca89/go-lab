@@ -16,20 +16,22 @@ type Config struct {
 	dryRun    bool
 }
 
+func (cfg *Config) RegisterFlags(fs *flag.FlagSet) {
+	fs.StringVar(&cfg.filename, "file", "tasks.json", "file containing the existing tasks in valid JSON format.")
+	fs.BoolVar(&cfg.debug, "debug", false, "debug output")
+	fs.BoolVar(&cfg.debug, "v", false, "verbose output (short)")
+	fs.BoolVar(&cfg.debug, "verbose", false, "verbose output. alias to debug")
+	fs.BoolVar(&cfg.dryRun, "dryrun", false, "perform a dry run of the task where no changes are performed)")
+	fs.StringVar(&cfg.taskTitle, "title", "", "title for the task to operate on")
+}
+
 func tasksList(tL todo.Tasks) {
 	if len(tL) == 0 {
 		fmt.Println("There are no existing tasks! get to work...")
 		return
 	}
-	fmt.Println("---------------------")
-	fmt.Println("| No. | Title | Complete? |")
-	fmt.Println("---------------------")
-	for i, t := range tL {
-		comp := "N"
-		if t.Completed {
-			comp = "Y"
-		}
-		fmt.Printf("%d, %q, %q\n", (i + 1), t.Title, comp)
+	for _, t := range tL {
+		fmt.Println(t.Title)
 	}
 }
 
@@ -66,14 +68,9 @@ func main() {
 
 	// 0. Init config and parse flags
 	cfg := new(Config)
-	flag.StringVar(&cfg.filename, "file", "tasks.json", "file containing the existing tasks in valid JSON format.")
-	flag.BoolVar(&cfg.debug, "debug", false, "debug output")
-	flag.BoolVar(&cfg.debug, "v", false, "verbose output (short)")
-	flag.BoolVar(&cfg.debug, "verbose", false, "verbose output. alias to debug")
-	flag.BoolVar(&cfg.dryRun, "dryrun", false, "perform a dry run of the task where no changes are performed)")
-	flag.StringVar(&cfg.taskTitle, "title", "", "title for the task to operate on")
-
-	flag.Parse()
+	fs := flag.NewFlagSet("todo flagset", flag.ExitOnError)
+	cfg.RegisterFlags(fs)
+	fs.Parse(os.Args[1:])
 
 	if cfg.debug {
 		log.Default().Printf("[DEBUG] App Config: %+v", cfg)
@@ -95,7 +92,7 @@ func main() {
 		log.Fatalf("Could not load tasks file: %q", err)
 	}
 
-	if len(flag.Args()) <= 0 {
+	if len(os.Args) == 1 {
 		// 2. List tasks.
 		tasksList(*tL)
 	} else {
