@@ -84,7 +84,8 @@ func TestTodoCLI(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		want := tt + "\n"
+		// Expected format provided by Tasks.String()
+		want := "[X] 1: " + tt + "\n"
 
 		got := string(out)
 		if want != got {

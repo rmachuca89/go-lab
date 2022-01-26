@@ -44,14 +44,12 @@ func (cfg *Config) RegisterFlags(fs *flag.FlagSet) {
 	}
 }
 
-func tasksList(tL todo.Tasks) {
-	if len(tL) == 0 {
+func tasksList(tL *todo.Tasks) {
+	if len(*tL) == 0 {
 		fmt.Println(infoTag, "There are no existing tasks! get to work...")
 		return
 	}
-	for _, t := range tL {
-		fmt.Println(t.Title)
-	}
+	fmt.Print(tL)
 }
 
 func taskAdd(tL *todo.Tasks, title string, dry bool) {
@@ -134,7 +132,7 @@ func main() {
 		taskAdd(tL, cfg.taskTitle, cfg.dryRun)
 
 	default:
-		tasksList(*tL)
+		tasksList(tL)
 	}
 
 	taskSave(tL, cfg.filename, cfg.dryRun)
