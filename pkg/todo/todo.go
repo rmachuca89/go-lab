@@ -3,6 +3,7 @@ package todo
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"time"
@@ -89,6 +90,19 @@ func (t *Tasks) Load(filename string) error {
 		return err
 	}
 	return nil
+}
+
+// String prints out a formatted task list. It implements the Stringer interface.
+func (t *Tasks) String() string {
+	formatted := ""
+	for i, t := range *t {
+		prefix := "[ ]"
+		if t.Completed {
+			prefix = "[X]"
+		}
+		formatted += fmt.Sprintf("%s %d: %s\n", prefix, i+1, t.Title)
+	}
+	return formatted
 }
 
 // indexOfTitle returns an index `int` value by searching current Tasks by Task.title.
