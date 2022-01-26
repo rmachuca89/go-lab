@@ -14,6 +14,7 @@ type Config struct {
 	debug     bool
 	taskTitle string
 	dryRun    bool
+	complete  bool
 }
 
 func (cfg *Config) RegisterFlags(fs *flag.FlagSet) {
@@ -21,8 +22,9 @@ func (cfg *Config) RegisterFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&cfg.debug, "debug", false, "debug output")
 	fs.BoolVar(&cfg.debug, "v", false, "verbose output (short)")
 	fs.BoolVar(&cfg.debug, "verbose", false, "verbose output. alias to debug")
-	fs.BoolVar(&cfg.dryRun, "dryrun", false, "perform a dry run of the task where no changes are performed)")
+	fs.BoolVar(&cfg.dryRun, "dryrun", false, "perform a dry run of the task where no changes are performed")
 	fs.StringVar(&cfg.taskTitle, "title", "", "title for the task to operate on")
+	fs.BoolVar(&cfg.complete, "complete", false, "completes the provided task title")
 }
 
 func tasksList(tL todo.Tasks) {
@@ -35,7 +37,7 @@ func tasksList(tL todo.Tasks) {
 	}
 }
 
-func taskAdd(title string, tL *todo.Tasks, dry bool) {
+func taskAdd(tL *todo.Tasks, title string, dry bool) {
 	if title == "" {
 		log.Fatalln("New task title can not be empty!")
 	}
@@ -53,7 +55,6 @@ func taskAdd(title string, tL *todo.Tasks, dry bool) {
 }
 
 func taskSave(tL *todo.Tasks, filename string, dry bool) {
-
 	if dry {
 		log.Default().Println("[DRY RUN] Tasks would be attempted to be saved to disk")
 		return
@@ -64,8 +65,19 @@ func taskSave(tL *todo.Tasks, filename string, dry bool) {
 	}
 }
 
-func main() {
+func taskComplete(tL *todo.Tasks, title string, dry bool) {
+	if dry {
+		log.Default().Println("[DRY RUN] Tasks would be attempted to be saved to disk")
+		return
+	}
 
+	if err := tL.Complete(title); err != nil {
+		log.Fatalf("Could not mark task as complete: %q", err)
+	}
+	log.Default().Printf("Task (%q) marked as complete.", title)
+}
+
+func main() {
 	// 0. Init config and parse flags
 	cfg := new(Config)
 	fs := flag.NewFlagSet("todo flagset", flag.ExitOnError)
@@ -87,28 +99,25 @@ func main() {
 			log.Fatalf("Could not write initial empty file: %q", err)
 		}
 	}
-	// 1. Load all existing tasks.
 	if err := tL.Load(cfg.filename); err != nil {
 		log.Fatalf("Could not load tasks file: %q", err)
 	}
 
-	if len(os.Args) == 1 {
-		// 2. List tasks.
-		tasksList(*tL)
-	} else {
-		// 3. Add tasks if args provided.
-		if cfg.taskTitle == "" {
-			log.Fatalln("the '--title' flag is required!")
-		}
-		if cfg.debug {
-			log.Default().Printf("[DEBUG] Parsed new task title from args: %q", cfg.taskTitle)
-		}
-		taskAdd(cfg.taskTitle, tL, cfg.dryRun)
+	// Flags parsing
+	switch {
 
-		// 4. Save new task to disk
-		taskSave(tL, cfg.filename, cfg.dryRun)
-		if cfg.debug {
-			log.Default().Println("[DEBUG] new task saved to disk!")
-		}
+	case cfg.taskTitle != "" && cfg.complete:
+		taskComplete(tL, cfg.taskTitle, cfg.dryRun)
+
+	case cfg.taskTitle != "":
+		taskAdd(tL, cfg.taskTitle, cfg.dryRun)
+
+	default:
+		tasksList(*tL)
+	}
+
+	taskSave(tL, cfg.filename, cfg.dryRun)
+	if cfg.debug {
+		log.Default().Println("[DEBUG] new task saved to disk!")
 	}
 }

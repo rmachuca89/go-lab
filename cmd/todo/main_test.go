@@ -61,9 +61,16 @@ func TestTodoCLI(t *testing.T) {
 	// Change to our temporal app testing dir.
 	os.Chdir(buildOutDir)
 
-	args := []string{"--title", tt}
-
 	t.Run("AddNewTask", func(t *testing.T) {
+		args := []string{"--title", tt}
+		cmd := exec.Command(buildOutFile, args...)
+		if err := cmd.Run(); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("CompleteTask", func(t *testing.T) {
+		args := []string{"--title", tt, "--complete"}
 		cmd := exec.Command(buildOutFile, args...)
 		if err := cmd.Run(); err != nil {
 			t.Fatal(err)
