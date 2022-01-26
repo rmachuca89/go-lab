@@ -10,6 +10,13 @@ import (
 	"github.com/rmachuca89/go-lab/pkg/todo"
 )
 
+const (
+	errorTag  string = "[ERROR]"
+	debugTag  string = "[DEBUG]"
+	infoTag   string = "[INFO]"
+	dryRunTag string = "[DRY-RUN]"
+)
+
 type Config struct {
 	binName   string
 	filename  string
@@ -39,7 +46,7 @@ func (cfg *Config) RegisterFlags(fs *flag.FlagSet) {
 
 func tasksList(tL todo.Tasks) {
 	if len(tL) == 0 {
-		fmt.Println("There are no existing tasks! get to work...")
+		fmt.Println(infoTag, "There are no existing tasks! get to work...")
 		return
 	}
 	for _, t := range tL {
@@ -49,42 +56,46 @@ func tasksList(tL todo.Tasks) {
 
 func taskAdd(tL *todo.Tasks, title string, dry bool) {
 	if title == "" {
-		log.Fatalln("New task title can not be empty!")
+		log.Fatalln(errorTag, "New task title can not be empty.")
 	}
 
 	if dry {
-		log.Default().Printf("[DRY RUN] Task with title %q would be attempted to be added", title)
+		log.Default().Printf("%s Task with title %q would be attempted to be added.", debugTag, title)
 		return
 	}
 
-	t, err := tL.Add(title)
+	_, err := tL.Add(title)
 	if err != nil {
-		log.Fatalf("Could not add new task (%q): %q", title, err)
+		log.Fatalf("%s Could not add new task (%q): %q", errorTag, title, err)
 	}
-	log.Default().Printf("New task (%q) added successfully", t.Title)
+	log.Default().Println(infoTag, "Success. New task created.")
 }
 
 func taskSave(tL *todo.Tasks, filename string, dry bool) {
 	if dry {
-		log.Default().Println("[DRY RUN] Tasks would be attempted to be saved to disk")
+		log.Default().Println(dryRunTag, "Tasks would be attempted to be saved to disk.")
 		return
 	}
 
 	if err := tL.Save(filename); err != nil {
-		log.Fatalf("Could not save tasks to file: %q", err)
+		log.Fatalf("%s Could not save tasks to file: %q", errorTag, err)
 	}
 }
 
 func taskComplete(tL *todo.Tasks, title string, dry bool) {
+	if title == "" {
+		log.Fatalln(errorTag, "Task title to complete required.")
+	}
+
 	if dry {
-		log.Default().Println("[DRY RUN] Tasks would be attempted to be saved to disk")
+		log.Default().Println(dryRunTag, "Tasks would be attempted to be saved to disk.")
 		return
 	}
 
 	if err := tL.Complete(title); err != nil {
-		log.Fatalf("Could not mark task as complete: %q", err)
+		log.Fatalf("%s Could not mark task as complete: %q", errorTag, err)
 	}
-	log.Default().Printf("Task (%q) marked as complete.", title)
+	log.Default().Println(infoTag, "Success. Task marked as complete.")
 }
 
 func main() {
@@ -95,28 +106,28 @@ func main() {
 	fs.Parse(os.Args[1:])
 
 	if cfg.debug {
-		log.Default().Printf("[DEBUG] App Config: %+v", cfg)
+		log.Default().Printf("%s App Config: %+v", debugTag, cfg)
 	}
 
 	tL := new(todo.Tasks)
 	// 1. Check if file exists; else create an empty
 	if _, err := os.Stat(cfg.filename); err != nil {
 		if cfg.debug {
-			log.Default().Printf("[DEBUG] File %q did NOT exist\n", cfg.filename)
+			log.Default().Printf("%s File %q did not exist. Creating it...\n", debugTag, cfg.filename)
 		}
 		wErr := tL.Save(cfg.filename)
 		if wErr != nil {
-			log.Fatalf("Could not write initial empty file: %q", err)
+			log.Fatalf("%s Could not write initial empty file: %q", errorTag, err)
 		}
 	}
 	if err := tL.Load(cfg.filename); err != nil {
-		log.Fatalf("Could not load tasks file: %q", err)
+		log.Fatalf("%s Could not load tasks file: %q", errorTag, err)
 	}
 
 	// Flags parsing
 	switch {
 
-	case cfg.taskTitle != "" && cfg.complete:
+	case cfg.complete:
 		taskComplete(tL, cfg.taskTitle, cfg.dryRun)
 
 	case cfg.taskTitle != "":
@@ -128,6 +139,6 @@ func main() {
 
 	taskSave(tL, cfg.filename, cfg.dryRun)
 	if cfg.debug {
-		log.Default().Println("[DEBUG] new task saved to disk!")
+		log.Default().Println(debugTag, "Tasks saved to disk.")
 	}
 }
