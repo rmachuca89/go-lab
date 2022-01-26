@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 
 	"github.com/rmachuca89/go-lab/pkg/todo"
 )
 
 type Config struct {
+	binName   string
 	filename  string
 	debug     bool
 	taskTitle string
@@ -25,6 +27,14 @@ func (cfg *Config) RegisterFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&cfg.dryRun, "dryrun", false, "perform a dry run of the task where no changes are performed")
 	fs.StringVar(&cfg.taskTitle, "title", "", "title for the task to operate on")
 	fs.BoolVar(&cfg.complete, "complete", false, "completes the provided task title")
+
+	cfg.binName = path.Base(os.Args[0])
+	fs.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "%s tool. Developed for learning purposes.\n", cfg.binName)
+		fmt.Fprintf(flag.CommandLine.Output(), "Copyright 2022\n")
+		fmt.Fprintln(flag.CommandLine.Output(), "Usage Information:")
+		fs.PrintDefaults()
+	}
 }
 
 func tasksList(tL todo.Tasks) {
